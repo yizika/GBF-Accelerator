@@ -1,4 +1,4 @@
-Windows 本地试用版（基于 2.5.0，分支 codex/local-cache-safety）
+Windows 本地定制版（基于 2.5.1，维护分支 codex/local-cache-safety）
 
 修改内容
 1. 指定 --upstream-proxy 不再隐式关闭上游 TLS 校验。
@@ -8,13 +8,22 @@ Windows 本地试用版（基于 2.5.0，分支 codex/local-cache-safety）
 3. Import-ACGPCache.ps1 将旧缓存中的图片、音视频、字体等复制到新目录。
    不复制 JS、CSS、WASM、SVG、HTML 和未知类型，也不修改旧缓存。
    原有 JSON 元数据中的验证标记会清除，供程序重新校验。
+4. 合入 v2.5.1 的中英日界面，以及上游 3171d36 的 OPTIONS 请求透传修复。
+
+从之前的定制版升级
+先通过托盘菜单退出旧程序，备份旧 GBF_Accelerator.exe，再仅替换这个 exe。
+保留原目录的 config.json、certs/ 和 cache/，不要覆盖成包内的新用户默认配置。
+ZeroOmega PAC 地址和 Clash 上游配置不需要改。无需迁移旧 ACGP 缓存。
+如需回退，退出后恢复备份的 exe。不要通过官方二进制更新覆盖本地安全补丁。
 
 试用
 1. 解压到独立目录，运行 Start-Trial.cmd。
 2. 上游预设为 http://127.0.0.1:7897，请核对 Clash 的 HTTP/混合端口。
 3. TLS 校验开启，岛风模式和 LAN 关闭；保留预取功能。
 4. 初次不会自动接管系统代理，也不会自动更新覆盖试用程序。
-   在界面确认端口及证书后，按原项目流程安装本机证书、启用 PAC。
+   新用户按界面流程安装本机证书，再在 ZeroOmega 使用 PAC：
+   http://127.0.0.1:8124/proxy.pac
+   已使用 ZeroOmega 时无需再开启加速器的系统 PAC。
 5. 首次建议使用空缓存。复用 ACGP 缓存时，关闭加速器，在 PowerShell 执行：
    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Import-ACGPCache.ps1 -Source "D:\ACGPower\cache\gbf\https" -Destination "D:\GBF-imported-cache"
    替换为实际路径；Source 应包含 assets 或 assets_en，Destination 必须不存在。
@@ -30,4 +39,6 @@ Windows/amd64、Linux/amd64、Darwin/amd64、Darwin/arm64 编译通过。
 隔离进程启动、控制接口、嵌入页面 HTTP 200、CLI 保持 TLS 校验已验证。
 Race detector 未执行：环境缺少 gcc/CGO 工具链。
 没有登录游戏实测，没有验证 macOS/Linux 实机运行，没有声明账号安全保证。
-本次未修改前端及桌面窗口布局；沿用仓库已有嵌入页面。
+前端与托盘采用上游 v2.5.1 多语言实现；构建时重新测试、生成并同步嵌入页面。
+远端 CI 结果应以 GitHub Actions 对应提交实际运行结果为准。
+当前环境桌面与浏览器自动化通道不可用，真实视觉烟测未执行。

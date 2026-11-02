@@ -1,0 +1,44 @@
+Fork maintenance
+
+origin:   git@github.com:yizika/GBF-Accelerator.git
+upstream: git@github.com:Sagisawa/GBF-Accelerator.git
+
+main mirrors upstream. Do not put custom patches on main.
+codex/local-cache-safety is the maintained custom branch.
+codex/update-v2.5.1 is the integration branch for upstream v2.5.1 plus
+3171d361ce96fa5f8b0282458f34a8e25c9813fc (OPTIONS forwarding and replay tests).
+The subsequent macOS cache migration commit is intentionally not included.
+
+Local patches to preserve:
+- Specifying an upstream proxy must not implicitly disable TLS verification.
+- Windows CA directory/key ACL protection and its regression test.
+- Optional passive-media cache import tool (not needed for a fresh cache).
+- Custom packaging and maintenance instructions.
+
+Update procedure (replace the version/branch names as needed):
+1. Confirm git status is clean; commit local work before updating.
+2. git fetch upstream --tags
+3. git switch codex/local-cache-safety
+4. git switch -c codex/update-vNEXT
+5. git merge --no-ff vNEXT
+6. Review and cherry-pick explicitly selected upstream fixes if necessary.
+7. Run engine/go test -count=1 ./..., go vet ./..., and go test -race -count=1 ./...
+   Report unavailable checks honestly. Never weaken existing tests.
+8. Run web/npm ci, npm test, npm run build. Synchronize web/dist to engine/ui/dist.
+9. Verify all four target builds and visually smoke-test the Windows UI.
+10. Review the diff, commit generated files and docs, then fast-forward the maintained branch.
+11. Push maintained and integration branches to origin, never to upstream.
+12. Build with tools/Build-LocalTrial.ps1 (Go on PATH, or -GoExecutable <absolute path>).
+    This runs frontend tests/build, embeds assets, and creates a fresh package directory.
+    It never terminates a running accelerator or packages local certificates/cache.
+
+CI runs on main, codex/** pushes and manual dispatch. It includes Linux Go race tests,
+Go static checks, four target builds and frontend tests/build. Check actual results;
+the presence of a workflow does not mean tests passed. Windows ACL tests run locally.
+
+Installing a custom upgrade:
+Exit the running accelerator through its tray menu, back up its executable, and replace
+only GBF_Accelerator.exe. Keep config.json, certs/ and cache/. Do not overlay the fresh
+package's default config on an existing installation. ZeroOmega PAC and Clash settings
+remain unchanged. Revert by restoring the previous executable if necessary.
+Do not use the upstream binary updater to maintain custom patches.
