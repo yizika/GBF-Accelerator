@@ -37,6 +37,9 @@ func NewManager(certsDir string) (*Manager, error) {
 
 	caCertPath := filepath.Join(certsDir, "ca.crt")
 	caKeyPath := filepath.Join(certsDir, "ca.key")
+	if err := protectPrivateKeyDirectory(certsDir); err != nil {
+		return nil, err
+	}
 
 	var caCert *x509.Certificate
 	var caKey *rsa.PrivateKey
@@ -110,6 +113,9 @@ func parseCA(certPEM, keyPEM []byte) (*x509.Certificate, *rsa.PrivateKey, error)
 }
 
 func generateCA(certPath, keyPath string) (*x509.Certificate, *rsa.PrivateKey, []byte, error) {
+	if err := protectPrivateKeyDirectory(filepath.Dir(keyPath)); err != nil {
+		return nil, nil, nil, err
+	}
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return nil, nil, nil, err

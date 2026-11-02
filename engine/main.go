@@ -188,7 +188,6 @@ func main() {
 		if flagWasSet("upstream-proxy") {
 			c.UpstreamProxy = *upstreamProxy
 			c.DirectMode = false
-			c.VerifyUpstreamTLS = false // Disable TLS verify for mock upstream proxy
 		}
 		if flagWasSet("direct-mode") {
 			c.DirectMode = *directMode

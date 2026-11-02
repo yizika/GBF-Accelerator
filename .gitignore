@@ -39,3 +39,4 @@ output/
 tools/android/
 backups/
 /assets/
+/tools/local-go/

@@ -1,0 +1,33 @@
+Windows 本地试用版（基于 2.5.0，分支 codex/local-cache-safety）
+
+修改内容
+1. 指定 --upstream-proxy 不再隐式关闭上游 TLS 校验。
+2. Windows 启动及生成证书前收紧证书目录与已有私钥访问权限；保留原有证书。
+   允许当前用户、SYSTEM 和管理员访问。权限操作失败时停止初始化。
+   Windows PowerShell 调用有 15 秒超时。其他平台保持原有行为。
+3. Import-ACGPCache.ps1 将旧缓存中的图片、音视频、字体等复制到新目录。
+   不复制 JS、CSS、WASM、SVG、HTML 和未知类型，也不修改旧缓存。
+   原有 JSON 元数据中的验证标记会清除，供程序重新校验。
+
+试用
+1. 解压到独立目录，运行 Start-Trial.cmd。
+2. 上游预设为 http://127.0.0.1:7897，请核对 Clash 的 HTTP/混合端口。
+3. TLS 校验开启，岛风模式和 LAN 关闭；保留预取功能。
+4. 初次不会自动接管系统代理，也不会自动更新覆盖试用程序。
+   在界面确认端口及证书后，按原项目流程安装本机证书、启用 PAC。
+5. 首次建议使用空缓存。复用 ACGP 缓存时，关闭加速器，在 PowerShell 执行：
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Import-ACGPCache.ps1 -Source "D:\ACGPower\cache\gbf\https" -Destination "D:\GBF-imported-cache"
+   替换为实际路径；Source 应包含 assets 或 assets_en，Destination 必须不存在。
+   在程序中选择新目录，执行缓存体检后再使用。不要重新选择旧缓存目录。
+   迁移不证明素材与 CDN 原件完全一致；脚本等资源在实际请求时重新下载。
+6. 停用时先关闭系统 PAC；不再使用本工具时，通过界面卸载它的根证书。
+   不要分享 certs/ca.key。包内不包含任何用户证书、私钥或旧缓存。
+
+验证
+全量 go test -count=1 ./...、go vet ./... 通过。
+新增 Windows ACL 修复测试和迁移工具测试通过。
+Windows/amd64、Linux/amd64、Darwin/amd64、Darwin/arm64 编译通过。
+隔离进程启动、控制接口、嵌入页面 HTTP 200、CLI 保持 TLS 校验已验证。
+Race detector 未执行：环境缺少 gcc/CGO 工具链。
+没有登录游戏实测，没有验证 macOS/Linux 实机运行，没有声明账号安全保证。
+本次未修改前端及桌面窗口布局；沿用仓库已有嵌入页面。
